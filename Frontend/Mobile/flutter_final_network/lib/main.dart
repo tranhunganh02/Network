@@ -1,20 +1,49 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:flutter_final_network/providers/auth_provider.dart';
+import 'package:flutter_final_network/view/auth/login_screen.dart';
+import 'package:flutter_final_network/view/auth/sign_up_screen.dart';
+import 'package:flutter_final_network/view/chatRoom/chat_room_screen.dart';
+import 'package:flutter_final_network/view/home/home_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import 'package:socket_io_client/socket_io_client.dart';
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+   MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Socket.IO Demo',
-      home: SocketIoDemo(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider())
+      ],
+      child: MaterialApp(
+        initialRoute: "/login",
+         routes:{
+        '/login':(context) => SignInScreen(),
+        '/home':(context) => HomeScreen(),
+        '/register':(context) => SignUpScreen(),
+        '/chatRoom':(context) => ChatRoom()
+      },
+        title: 'Socket.IO Demo',       
+      ),
     );
   }
+
+  // final GoRouter _router = GoRouter(routes: [
+  //   GoRoute(path: "/login", builder: (context, state) => const SignInScreen(),),
+  //   GoRoute(path: "/register", builder: (context, state) => const SignUpScreen(),),
+  //   GoRoute(path: "/", builder: (context, state) => const SignInScreen(),),
+  //   GoRoute(path: "/chatRoom", builder: (context, state) => const SignInScreen(),)
+  // ]);
 }
 
 class SocketIoDemo extends StatefulWidget {
@@ -25,20 +54,43 @@ class SocketIoDemo extends StatefulWidget {
 }
 
 class _SocketIoDemoState extends State<SocketIoDemo> {
-  late IO.Socket socket;
+//   late Socket socket; //initalize the Socket.IO Client Object 
 
-  @override
-  void initState() {
-    super.initState();
+//   @override
+//   void initState() {
+//     super.initState();
+//     initializeSocket(); //--> call the initializeSocket method in the initState of our app.
+//   }
 
-    // Kết nối đến máy chủ Socket.IO
-    socket = IO.io('http://127.0.0.1:3001');
+//  @override
+//   void dispose() {
+//     socket.close(); // --> disconnects the Socket.IO client once the screen is disposed 
+//     super.dispose();
+//   }
 
-    // Lắng nghe sự kiện 'connect'
-    socket.on('connect', (_) {
-      print('Connected to server');
-    });
-  }
+// void initializeSocket() {
+//       socket =
+//           io("http://127.0.0.1:3000/", <String, dynamic>{
+//         "transports": ["websocket"],
+//         "autoConnect": true,
+//       });
+//       socket.connect();  //connect the Socket.IO Client to the Server
+
+//       //SOCKET EVENTS
+//       // --> listening for connection 
+//       socket.emit('addNewUser', "s14432r3r");
+
+//       //listen for incoming messages from the Server. 
+//       socket.on('getOnlineUsers', (data) {
+//        print(data); //
+//       });
+
+//       //listens when the client is disconnected from the Server 
+//       socket.on('disconnect', (data) {
+//         print('disconnect');
+//       });
+//   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +102,7 @@ class _SocketIoDemoState extends State<SocketIoDemo> {
         child: ElevatedButton(
           onPressed: () {
             // Gửi dữ liệu khi nút được nhấn
-            print("object");
-            socket.emit('clientData', {'message': 'Hello from Flutter!'});
+            //socket.emit('addNewUser', "27348742");
           },
           child: Text('Send Data to Server'),
         ),
@@ -59,10 +110,4 @@ class _SocketIoDemoState extends State<SocketIoDemo> {
     );
   }
 
-  @override
-  void dispose() {
-    // Đóng kết nối khi widget được hủy
-    socket.disconnect();
-    super.dispose();
-  }
 }
